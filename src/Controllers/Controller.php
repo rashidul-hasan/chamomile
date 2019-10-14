@@ -5,29 +5,20 @@ namespace Rashidul\Chamomile\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
 use Illuminate\Routing\Controller as BaseController;
+use Rashidul\Chamomile\Services\Crud;
 
 //TODO add jqt token authorization for all endpoint
 class Controller extends BaseController
 {
 
-    protected $model;
-
-    protected $config;
-
-    protected $request;
-
-    protected $resource;
+    private $crud;
 
 
     public function __construct()
     {
 
         $this->middleware(function ($request, $next) {
-            $this->request = $request;
-            $this->resource = $request->route('resource');
-            $this->config = $this->getConfig($this->resource);
-            $this->model = new $this->config['model'];
-
+            $this->crud = new Crud($request);
             return $next($request);
         });
     }
@@ -36,14 +27,10 @@ class Controller extends BaseController
     public function store()
     {
 
-        $this->model::create([
-            'name' => $this->request->get('name')
-        ]);
+        //TODO permission, authorization, jwt token
+        $data = $this->crud->store();
 
-        return response()->json([
-            'success' => true,
-            'message' => $this->config['name'] . ' created!'
-        ]);
+        return response()->json($data);
     }
 
     public function index()
@@ -107,20 +94,5 @@ class Controller extends BaseController
     }
 
 
-    private function getConfig($resource)
-    {
-        //TODO check if all required keys are defined in config.php file
-        $basepath = config('chamomile.base_path');
-        $configFile = "$basepath/$resource/config.php"; //TODO check of resurce is valid
-        $config = [];
-        try {
-            if (!empty($configFile)) {
-                $config = include $configFile;
-            }
-        } catch (\Exception $e) {
-            //TODO use a global handler to return 'invalid resource' error
-        }
-        return $config;
-    }
 
 }
