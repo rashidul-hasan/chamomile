@@ -12,7 +12,8 @@ class GenerateCommand extends Command
 
     protected $signature = 'chamomile:init
                             {entity : The name of the API.}
-                            {--fields= : Fields for the tables.}';
+                            {--fields= : Fields for the tables.}
+                            {--model}';
 
     protected $description = 'Generate an API';
 
@@ -37,47 +38,29 @@ class GenerateCommand extends Command
         $stub = $this->files->get($this->getConfigStub());
         $stub = str_replace('{{Name}}', $entity, $stub);
         $stub = str_replace('{{url}}', strtolower($entity), $stub);
-        $stub = str_replace('{{modelNamespace}}', $modelNamespace, $stub);
-        $stub = str_replace('{{modelName}}', $entity, $stub);
+        if ($this->option('model')) {
+            $stub = str_replace('{{modelNamespace}}', "use $modelNamespace\\$entity;", $stub);
+            $stub = str_replace('{{modelName}}', "$entity::class", $stub);
+        } else {
+            $stub = str_replace('{{modelNamespace}}', '', $stub);
+            $stub = str_replace('{{modelName}}', 'null', $stub);
+        }
         if (! $this->files->isDirectory(dirname($configFile))) {
             $this->files->makeDirectory(dirname($configFile), 0777, true, true);
         }
         $this->files->put($configFile, $stub);
 
         // create model
-        $modelFile = "$basepath/$entity/$entity.php";
-        $stub = $this->files->get($this->getModelStub());
-        $stub = str_replace('{{modelNamespace}}', $modelNamespace, $stub);
-        $stub = str_replace('{{modelName}}', $entity, $stub);
-        if (! $this->files->isDirectory(dirname($modelFile))) {
-            $this->files->makeDirectory(dirname($modelFile), 0777, true, true);
+        if ($this->option('model')) {
+            $modelFile = "$basepath/$entity/$entity.php";
+            $stub = $this->files->get($this->getModelStub());
+            $stub = str_replace('{{modelNamespace}}', $modelNamespace, $stub);
+            $stub = str_replace('{{modelName}}', $entity, $stub);
+            if (! $this->files->isDirectory(dirname($modelFile))) {
+                $this->files->makeDirectory(dirname($modelFile), 0777, true, true);
+            }
+            $this->files->put($modelFile, $stub);
         }
-        $this->files->put($modelFile, $stub);
-        /*$dir = str_plural($entity);
-        $namespace = "Crud\\$dir";
-
-        // create controller
-        $controllerPath = base_path() . '/crud/' . $dir . '/CrudController.php';
-        $stub = $this->files->get($this->getStub());
-        $stub = str_replace('DummyNamespace', $namespace, $stub);
-        $stub = str_replace('DummyClass', "CrudController", $stub);
-        $stub = str_replace('{{modelName}}', $entity, $stub);
-
-        if (! $this->files->isDirectory(dirname($controllerPath))) {
-            $this->files->makeDirectory(dirname($controllerPath), 0777, true, true);
-        }
-        $this->files->put($controllerPath, $stub);
-
-        // create model
-        $modelPath = base_path() . '/crud/' . $dir . '/' . $entity .'.php';
-        $stub = $this->files->get($this->getModelStub());
-        $stub = str_replace('DummyNamespace', $namespace, $stub);
-        $stub = str_replace('DummyClass', $entity, $stub);
-        $fields = $this->generateFieldsArray(rtrim($this->option('fields'), ';'));
-        $helper =  new Helper();
-        $fieldsStr = $helper->arrayAsString($fields);
-        $stub = str_replace('{{fields}}', $fieldsStr, $stub);
-        $this->files->put($modelPath, $stub);*/
 
         $this->info('You\'re Done! Yeee!');
 

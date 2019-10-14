@@ -1,12 +1,12 @@
 <?php
 
-use {{modelNamespace}}\{{modelName}};
+{{modelNamespace}}
 
 return [
 
     'url' => '{{url}}',
     'name' => '{{Name}}',
-    'model' => {{modelName}}::class,
+    'model' => {{modelName}},
 
     /*
      * Fields
