@@ -4,99 +4,104 @@ namespace Rashidul\Chamomile\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\App;
+use Illuminate\Routing\Controller as BaseController;
 
 //TODO add jqt token authorization for all endpoint
-class Controller
+class Controller extends BaseController
 {
 
-    public function store(Request $request, $resource)
+    protected $model;
+
+    protected $config;
+
+    protected $request;
+
+    protected $resource;
+
+
+    public function __construct()
     {
 
-        $config = $this->getConfig($resource);
+        $this->middleware(function ($request, $next) {
+            $this->request = $request;
+            $this->resource = $request->route('resource');
+            $this->config = $this->getConfig($this->resource);
+            $this->model = new $this->config['model'];
 
-        // get model class
-        $model = new $config['model'];
+            return $next($request);
+        });
+    }
 
-        $model::create([
-            'name' => $request->get('name')
+
+    public function store()
+    {
+
+        $this->model::create([
+            'name' => $this->request->get('name')
         ]);
 
         return response()->json([
             'success' => true,
-            'message' => $config['name'] . ' created!'
+            'message' => $this->config['name'] . ' created!'
         ]);
     }
 
-    public function index(Request $request, $resource)
+    public function index()
     {
-
-        $config = $this->getConfig($resource);
-
-        $model = new $config['model'];
 
         //TODO format data for datatable
         //TODO search, filter, pagination
         return response()->json([
             'success' => true,
             'message' => 'Fetched data',
-            'data' => $model::all()
+            'data' => $this->model::all()
         ]);
     }
 
     public function show($resource, $id)
     {
 
-        $config = $this->getConfig($resource);
-
-        $model = new $config['model'];
-
         return response()->json([
             'success' => true,
             'message' => 'Fetched data',
-            'data' => $model::findOrFail($id) //TODO handle invalid ids
+            'data' => $this->model::findOrFail($id) //TODO handle invalid ids
         ]);
     }
 
     public function delete($resource, $id)
     {
         //TODO handle invalid ids
-        $config = $this->getConfig($resource);
-
-        $modelClass = new $config['model'];
-        $model = $modelClass::findOrFail($id);
+        $model = $this->model::findOrFail($id);
         $model->delete(); //TODO try catch
 
         return response()->json([
             'success' => true,
-            'message' => $config['name'] . ' deleted!'
+            'message' => $this->config['name'] . ' deleted!'
         ]);
     }
 
-    public function update(Request $request, $resource, $id)
+    public function update($resource, $id)
     {
         //TODO handle invalid ids
-        $config = $this->getConfig($resource);
-
-        $modelClass = new $config['model'];
-        $model = $modelClass::findOrFail($id);
+        $model = $this->model::findOrFail($id);
         $model->update([
-            'name' => $request->get('name')
+            'name' => $this->request->get('name')
         ]); //TODO try catch
 
         return response()->json([
             'success' => true,
-            'message' => $config['name'] . ' updated!'
+            'message' => $this->config['name'] . ' updated!'
         ]);
     }
 
-    public function config($resource)
+    public function config()
     {
-        $config = $this->getConfig($resource);
+        //$config = ConfigFormatter::format($this->config);
 
         return response()->json([
             'success' => true,
             'message' => 'Success',
-            'config' => $config //TODO reformat the fields array, i.e. change string shortcuts to
+            'config' => $this->config //TODO reformat the fields array, i.e. change string shortcuts to
             // proper key value pair
         ]);
     }
@@ -104,11 +109,16 @@ class Controller
 
     private function getConfig($resource)
     {
+        //TODO check if all required keys are defined in config.php file
         $basepath = config('chamomile.base_path');
         $configFile = "$basepath/$resource/config.php"; //TODO check of resurce is valid
         $config = [];
-        if (!empty($configFile)) {
-            $config = include $configFile;
+        try {
+            if (!empty($configFile)) {
+                $config = include $configFile;
+            }
+        } catch (\Exception $e) {
+            //TODO use a global handler to return 'invalid resource' error
         }
         return $config;
     }
