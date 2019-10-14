@@ -1,0 +1,26 @@
+{
+    "name": "rashidul/chamomile",
+    "description": "Configuration based API generator for Laravel",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Rashidul Hasan",
+            "email": "rashidul69@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Rashidul\\Chamomile\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Rashidul\\Chamomile\\ChamomileServiceProvider"
+            ]
+        }
+    },
+    "minimum-stability":"dev"
+
+}

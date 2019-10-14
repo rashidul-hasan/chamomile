@@ -1,0 +1,15 @@
+<?php
+
+use {{modelNamespace}}\{{modelName}};
+
+return [
+
+    'url' => '{{url}}',
+    'name' => '{{Name}}',
+    'model' => {{modelName}}::class,
+
+    /*
+     * Fields
+     * */
+    'fields' => []
+];
