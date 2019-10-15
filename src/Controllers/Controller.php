@@ -38,59 +38,44 @@ class Controller extends BaseController
 
         //TODO format data for datatable
         //TODO search, filter, pagination
-        return response()->json([
-            'success' => true,
-            'message' => 'Fetched data',
-            'data' => $this->model::all()
-        ]);
+        //TODO permission, authorization, jwt token
+        $data = $this->crud->index();
+
+        return response()->json($data);
     }
 
     public function show($resource, $id)
     {
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Fetched data',
-            'data' => $this->model::findOrFail($id) //TODO handle invalid ids
-        ]);
+        $data = $this->crud->show($id);
+
+        return response()->json($data);
+
     }
 
     public function delete($resource, $id)
     {
         //TODO handle invalid ids
-        $model = $this->model::findOrFail($id);
-        $model->delete(); //TODO try catch
+        $data = $this->crud->delete($id);
 
-        return response()->json([
-            'success' => true,
-            'message' => $this->config['name'] . ' deleted!'
-        ]);
+        return response()->json($data);
     }
 
     public function update($resource, $id)
     {
         //TODO handle invalid ids
-        $model = $this->model::findOrFail($id);
-        $model->update([
-            'name' => $this->request->get('name')
-        ]); //TODO try catch
+        $data = $this->crud->update($id);
 
-        return response()->json([
-            'success' => true,
-            'message' => $this->config['name'] . ' updated!'
-        ]);
+        return response()->json($data);
     }
 
     public function config()
     {
         //$config = ConfigFormatter::format($this->config);
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Success',
-            'config' => $this->config //TODO reformat the fields array, i.e. change string shortcuts to
-            // proper key value pair
-        ]);
+        $data = $this->crud->config();
+
+        return response()->json($data);
     }
 
 

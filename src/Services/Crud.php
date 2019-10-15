@@ -73,6 +73,88 @@ class Crud
         return $this->responseData;
     }
 
+    public function index()
+    {
+        return [
+            'success' => true,
+            'message' => 'Fetched data',
+            'data' => $this->model::all()
+        ];
+    }
+
+    public function show($id)
+    {
+        return [
+            'success' => true,
+            'message' => 'Fetched data',
+            'data' => $this->model::findOrFail($id) //TODO handle invalid ids
+        ];
+    }
+
+    public function delete($id)
+    {
+        $model = $this->model::findOrFail($id);
+        $model->delete(); //TODO try catch
+
+        return [
+            'success' => true,
+            'message' => $this->config['name'] . ' deleted!'
+        ];
+    }
+
+    public function update($id)
+    {
+        try
+        {
+            $this->model = $this->model->findOrFail($id);
+        }
+        catch (\Exception $e)
+        {
+            return [
+                'success' => false,
+                'message' => $e->getMessage()
+            ];
+        }
+
+        try{
+            $this->validate($this->request, $this->configReader->getvalidationRules(), [], $this->configReader->getFieldsWithLabels());
+        } catch (\Exception $exception) {
+            throw new \Exception("Validation error");
+        }
+        $this->model = ModelHelper::fillWithRequestData($this->model, $this->configReader->getFields(), $this->request);
+
+        $this->callHookMethod('updating');
+
+        try{
+            if ($this->model->update()){
+                $this->responseData['success'] = true;
+                $this->responseData['message'] = $this->configReader->getEntityName() . ' Updated';
+                $this->responseData['item'] = $this->model;
+
+                $this->callHookMethod('updated');
+
+            } else {
+                $this->responseData['success'] = false;
+                $this->responseData['message'] = 'Something went wrong';
+            }
+        } catch (QueryException $e){
+            $this->responseData['success'] = false;
+            $this->responseData['message'] = 'Something went wrong';
+        }
+
+        return $this->responseData;
+
+    }
+
+    public function config()
+    {
+        return [
+            'success' => true,
+            'message' => 'Success',
+            'config' => $this->config //TODO reformat the fields array, i.e. change string shortcuts to
+            // proper key value pair
+        ];
+    }
     private function getConfig($resource)
     {
         //TODO check if all required keys are defined in config.php file
