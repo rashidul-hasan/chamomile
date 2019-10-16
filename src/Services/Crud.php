@@ -148,10 +148,11 @@ class Crud
 
     public function config()
     {
+        $config = ConfigFormatter::format($this->config);
         return [
             'success' => true,
             'message' => 'Success',
-            'config' => $this->config //TODO reformat the fields array, i.e. change string shortcuts to
+            'config' => $config //TODO reformat the fields array, i.e. change string shortcuts to
             // proper key value pair
         ];
     }
