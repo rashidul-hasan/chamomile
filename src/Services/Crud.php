@@ -78,7 +78,7 @@ class Crud
         return [
             'success' => true,
             'message' => 'Fetched data',
-            'data' => $this->model::paginate(15)
+            'data' => $this->model->latest('created_at')->paginate(15)
         ];
     }
 
