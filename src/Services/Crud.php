@@ -78,7 +78,7 @@ class Crud
         return [
             'success' => true,
             'message' => 'Fetched data',
-            'data' => $this->model::all()
+            'data' => $this->model::paginate(15)
         ];
     }
 
@@ -156,6 +156,7 @@ class Crud
             // proper key value pair
         ];
     }
+
     private function getConfig($resource)
     {
         //TODO check if all required keys are defined in config.php file
